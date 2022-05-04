@@ -4,8 +4,8 @@
 --	  	https://creativecommons.org/licenses/by-sa/4.0/
 
 local applyDamage = nil
+local messageDamage = nil
 local rest = nil
-local getPCPowerAction = nil
 
 OOB_MSGTYPE_ARCANEWARD = "arcaneward"
 
@@ -13,18 +13,18 @@ function onInit()
 	OOBManager.registerOOBMsgHandler(OOB_MSGTYPE_ARCANEWARD, handleArcaneWard)
 
 	applyDamage = ActionDamage.applyDamage
+	messageDamage = ActionDamage.messageDamage
 	rest = CharManager.rest
-	getPCPowerAction = PowerManager.getPCPowerAction
 
 	ActionDamage.applyDamage = customApplyDamage
+	ActionDamage.messageDamage = customMessageDamage
 	CharManager.rest = customRest
---	PowerManager.getPCPowerAction = customGetPCPowerAction
 end
 
 function onClose()
 	ActionDamage.applyDamage = applyDamage
+	ActionDamage.messageDamage = messageDamage
 	CharManager.rest = rest
-	--PowerManager.getPCPowerAction = getPCPowerAction
 end
 
 function castAbjuration(nodeActor, nLevel)
@@ -61,32 +61,66 @@ function hasArcaneWard(rActor)
 end
 
 function arcaneWard(rSource, rTarget, bSecret, sDamage, nTotal)
-	--TODO: Function will subtract damage from the total that is absorbed by arcane ward
-	-- and update the damage string. Any remaining will be pass on to applyDamage
+	local nodeTarget = ActorManager.getCreatureNode(rTarget)
+	local nActive = DB.getValue(nodeTarget, "arcaneward", 0)
+	local rDamageOutput = ActionDamage.decodeDamageText(nTotal, sDamage)
+	local nArcaneWardHP = DB.getValue(nodeTarget, "hp.arcaneward", 0)
+	if nActive == 1 and nArcaneWardHP > 0 then
+		local nTotalOrig = nTotal
+		if nTotal >= nArcaneWardHP then
+			nTotal = nTotal - nArcaneWardHP
+			nArcaneWardHP = 0
+		else
+			nArcaneWardHP = nArcaneWardHP - nTotal
+			nTotal = 0
+		end
+		DB.setValue(nodeTarget, "hp.arcaneward", "number", nArcaneWardHP)
+		Debug.chat("Arcane Ward Hit " .. "Ward Takes:  " .. tostring(nArcaneWardHP) .. " Damage: "  .. nTotal)
+		sDamage =  "[ARCANE WARD: " .. tostring(nTotalOrig - nTotal) .. "] " .. sDamage
+	end
+	return sDamage, nTotal
 end
+
+
+--Sage Advice
+--https://dnd.wizards.com/articles/features/sageadvice_july2015
+-- How does Arcane Ward interact with temporary hit points and damage resistance that an abjurer might have?
+-- An Arcane Ward is not an extension of the wizard who creates it. It is a magical effect with its own hit points.
+-- Any temporary hit points, immunities, or resistances that the wizard has don’t apply to the ward.
+
+-- The ward takes damage first. Any leftover damage is taken by the wizard and goes through the following game elements in order:
+--  (1) any relevant damage immunity,
+--  (2) any relevant damage resistance,
+--  (3) any temporary hit points, and
+--  (4) real hit points.
 
 function customApplyDamage (rSource, rTarget, bSecret, sDamage, nTotal)
 
-	Debug.chat(sDamage)
-	Debug.chat(nTotal)
 	--TODO: If the target has an effect named Arcane Ward, the source of the effect
 	-- will take the damage and the original target takes the rest
-	local aArcaneWard = getEffectsByType(rTarget, "ARCANE WARD", {}, rSource)
+	local aArcaneWard = EffectManager5E.getEffectsByType(rTarget, "ARCANE WARD", {}, rSource)
+
 	--Technically you could have two different wizards spend their reaction on this character
 	for _,nodeEffect in pairs(aArcaneWard) do
-	-- TODO: Get source. and pass him to arcaneWard
 		local nodeSource = DB.getValue(nodeEffect,"source_name", "")
 		local rEffectSource = ActorManager.resolveActor(nodeSource)
 		if rEffectSource ~= nil then
-			arcaneWard(rSource, rEffectSource, bSecret, sDamage, nTotal)
+			sDamage, nTotal = arcaneWard(rSource, rEffectSource, bSecret, sDamage, nTotal)
 		end
 	end
 	if (hasArcaneWard(rTarget)) then
-		arcaneWard(rSource, rTarget, bSecret, sDamage, nTotal)
+		sDamage, nTotal = arcaneWard(rSource, rTarget, bSecret, sDamage, nTotal)
 	end
 	return applyDamage(rSource, rTarget, bSecret, sDamage, nTotal)
 end
 
+function customMessageDamage(rSource, rTarget, bSecret, sDamageType, sDamageDesc, sTotal, sExtraResult)
+	local sArcaneWard = sDamageDesc:match("%[ARCANE WARD:%s*%d*]")
+	if sArcaneWard ~= nil then
+		sExtraResult = "ABSORBED " .. sArcaneWard .. sExtraResult
+	end
+	return messageDamage(rSource, rTarget, bSecret, sDamageType, sDamageDesc, sTotal, sExtraResult)
+end
 
 function customRest(nodeActor, bLong)
 	local rActor = ActorManager.resolveActor(nodeActor)
@@ -100,47 +134,26 @@ function customRest(nodeActor, bLong)
 	rest(nodeActor, bLong)
 end
 
--- function customEncodeActors(draginfo, rSource, aTargets)
--- 	if (draginfo and rSource and rSource.sConditions and rSource.sConditions ~= "") then
---         draginfo.setMetaData("sConditions",rSource.sConditions)
---     end
--- 	return	encodeActors(draginfo, rSource, aTargets)
--- end
 
--- setup up metadata for saves vs conditon when PC rolled from character sheet
--- Not needed- going a different route
--- function customGetPCPowerAction(nodeAction, sSubRoll)
--- 	local rAction, rActor = getPCPowerAction(nodeAction, sSubRoll)
--- 	--Debug.chat(rAction)
--- 	local sSchool = DB.getValue(nodeAction, "...school", "");
--- 	local sGroup = DB.getValue(nodeAction, "...group", "");
--- 	Debug.chat(sSchool ..  " " .. sGroup .. " " .. rAction.type)
--- 	if rActor ~= nil and rAction.save then
--- 		for _,v in pairs(DB.getChildren(nodeAction.getParent().getParent(), "")) do
--- 			local sGroup = DB.getValue(v, "group", "")
--- 			local sSchool = DB.getValue(v, "school", "")
--- 		end
--- 	end
--- 	return rAction, rActor
--- end
-
-function sendOOB(nodeEffect,type, sEffect)
+function sendOOB(nodeActor,nLevel)
 	local msgOOB = {}
--- TODO: Figure out what we want to send OOB
-	-- msgOOB.type = type
-	-- msgOOB.sNodeActor = nodeEffect.getParent().getParent().getPath()
-	-- msgOOB.sNodeEffect = tostring(sDamage)
-	-- if type == OOB_MSGTYPE_ARCANEWARD then
-	-- 	msgOOB.sLabel = sEffect
-	-- end
+	msgOOB.sNodeActor = nodeActor
+	msgOOB.sNodeEffect = tostring(nLevel)
+	msgOOB.type = OOB_MSGTYPE_ARCANEWARD
 	Comm.deliverOOBMessage(msgOOB, "")
 end
 
 function handleArcaneWard(msgOOB)
--- TODO: Figure out what to handle
-	-- if handlerCheck(msgOOB) then
-	-- 	local nodeActor = DB.findNode(msgOOB.sNodeActor)
-	-- 	local nodeEffect = DB.findNode(msgOOB.sDamage)
-	-- 	EffectManager.deactivateEffect(nodeActor, nodeEffect)
-	-- end
+	local nodeActor = DB.findNode(msgOOB.sNodeActor)
+	if not nodeActor then
+		ChatManager.SystemMessage(Interface.getString("ct_error_effectmissingactor") .. " (" .. msgOOB.sNodeActor .. ")")
+		return false
+	end
+	local sLevel = DB.findNode(msgOOB.sLevel)
+	if not sLevel then
+		ChatManager.SystemMessage(Interface.getString("ct_error_effectdeletefail") .. " (" .. msgOOB.sLevel .. ")")
+		return false
+	end
+	local nLevel = tonumber(sLevel)
+	castAbjuration(nodeActor, nLevel)
 end

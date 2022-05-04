@@ -11,6 +11,13 @@ function getFilter()
 end
 
 function onInit()
+	local node = getDatabaseNode()
+    local sSchool = DB.getValue(node, "school", "")
+	local sGroup = DB.getValue(node, "group", "")
+    local rActor = ActorManager.resolveActor(node.getParent().getParent())
+	if sGroup == "Spells" and sSchool == "Abjuration" and ArcaneWard.hasArcaneWard(rActor) then
+		setBackColor("Efccc8")
+	end
 	if super and super.onInit then
 		return super.onInit()
 	end
@@ -55,8 +62,13 @@ function usePower(bShowFull)
     -- TODO: Deal with an upcast
     if sGroup == "Spells" and sSchool == "Abjuration" and ArcaneWard.hasArcaneWard(rActor) then
         local nLevel = DB.getValue(node, "level", 0)
-        ArcaneWard.castAbjuration(node.getParent().getParent(), nLevel )
---        Debug.chat("UsePower:" .. sSchool ..  " " .. sGroup .. " " ..tostring(nLevel))
+		if Session.IsHost then
+        	ArcaneWard.castAbjuration(node.getParent().getParent(), nLevel )
+		else
+			ArcaneWard.sendOOB(node.getParent().getParent(), nLevel)
+		end
+
+--		setBackColor("D6f1b5")
 
     end
     if super and super.usePower then
