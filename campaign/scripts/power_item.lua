@@ -50,11 +50,15 @@ function usePower(bShowFull)
     local node = getDatabaseNode()
     local sSchool = DB.getValue(node, "school", "")
 	local sGroup = DB.getValue(node, "group", "")
-	local sLevel = DB.getValue(node, "level", "")
+    local rActor = ActorManager.resolveActor(node.getParent().getParent())
 
-	Debug.chat("UsePower:" .. sSchool ..  " " .. sGroup .. " " .. sLevel)
-    -- TODO: Call ArcaneWard
     -- TODO: Deal with an upcast
+    if sGroup == "Spells" and sSchool == "Abjuration" and ArcaneWard.hasArcaneWard(rActor) then
+        local nLevel = DB.getValue(node, "level", 0)
+        ArcaneWard.castAbjuration(node.getParent().getParent(), nLevel )
+--        Debug.chat("UsePower:" .. sSchool ..  " " .. sGroup .. " " ..tostring(nLevel))
+
+    end
     if super and super.usePower then
 		return super.usePower(bShowFull)
 	end

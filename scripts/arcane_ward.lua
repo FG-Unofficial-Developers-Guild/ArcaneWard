@@ -5,6 +5,7 @@
 
 local applyDamage = nil
 local rest = nil
+local getPCPowerAction = nil
 
 OOB_MSGTYPE_ARCANEWARD = "arcaneward"
 
@@ -12,41 +13,45 @@ function onInit()
 	OOBManager.registerOOBMsgHandler(OOB_MSGTYPE_ARCANEWARD, handleArcaneWard)
 
 	applyDamage = ActionDamage.applyDamage
-	ActionDamage.applyDamage = customApplyDamage
 	rest = CharManager.rest
+	getPCPowerAction = PowerManager.getPCPowerAction
+
+	ActionDamage.applyDamage = customApplyDamage
 	CharManager.rest = customRest
+--	PowerManager.getPCPowerAction = customGetPCPowerAction
 end
 
 function onClose()
-	applyDamage = ActionDamage.applyDamage
+	ActionDamage.applyDamage = applyDamage
 	CharManager.rest = rest
+	--PowerManager.getPCPowerAction = getPCPowerAction
 end
 
+function castAbjuration(nodeActor, nLevel)
+	local nActive = DB.getValue(nodeActor, "arcaneward", 0)
+	local nTotal
 
--- TODO: Figure out the spell that is being cast and get its type
--- actions id# group = Spells
--- actions id# school = Abjuration
--- if the spell is abjuration then increase the  ward by twice the spell level
--- if this is the first time cast today (active today flag false), then instead it has WIZLEVEL *2 + INTMOD
--- Only do all of this for PCs as Monsters start out their ward static
--- TODO: Need a DB entry for the Arcane Ward HP pool and also if it is currently active after long rest
-
-function customRest(nodeActor, bLong)
-	local rActor = ActorManager.resolveActor(nodeActor);
-	if bLong and hasArcaneWard(rActor) then
-		--TODO: -- Clear the arcane ward HP pool in the DB as well as the active today flag
+	if nActive == 1 then
+		local nArcaneWardHP = DB.getValue(nodeActor, "hp.arcaneward", 0)
+		nTotal = nArcaneWardHP + nLevel * 2
+	else
+		local nBonus = DB.getValue(nodeActor, "abilities.intelligence.bonus", 0)
+--		local nWizLevel = DB.getValue(nodeActor, "abilities.intelligence.bonus", 0)
+		local nWizLevel = 4
+		nTotal = nWizLevel * 2  + nBonus
+		DB.setValue(nodeActor, "arcaneward", "number", 1)
 	end
-	rest(nodeActor, bLong)
+	DB.setValue(nodeActor, "hp.arcaneward", "number", nTotal)
 end
 
 function hasArcaneWard(rActor)
 	local nodeActor = ActorManager.getCreatureNode(rActor)
-	local nodeTraits = nodeActor.getChild("traitlist") or nodeActor.getChild("traits")
-	if nodeTraits ~= nil then
-		local aTraits = nodeTraits.getChildren()
-		for _, nodeTrait in pairs(aTraits) do
-			local sName = DB.getValue(nodeTrait, "name", "")
-			if sName == "Arcane Ward" then
+	local nodeFeatures = nodeActor.getChild("featurelist")
+	if nodeFeatures ~= nil then
+		local aFeatures = nodeFeatures.getChildren()
+		for _, nodeFeature in pairs(aFeatures) do
+			local sName = DB.getValue(nodeFeature, "name", "")
+			if sName:upper() == "ARCANE WARD" then
 				--TODO: - parse NPC for the text "X hit points" and that is it's ward #
 				return true
 			end
@@ -55,14 +60,11 @@ function hasArcaneWard(rActor)
 	return false
 end
 
--- TODO: Going to need a button or some sort of way to signal
--- to FG that an aburjation spell was cast for spells that don't have a FG
--- in game mechanic. ceremony, alarm etc.
-
 function arcaneWard(rSource, rTarget, bSecret, sDamage, nTotal)
 	--TODO: Function will subtract damage from the total that is absorbed by arcane ward
 	-- and update the damage string. Any remaining will be pass on to applyDamage
 end
+
 function customApplyDamage (rSource, rTarget, bSecret, sDamage, nTotal)
 
 	Debug.chat(sDamage)
@@ -73,14 +75,54 @@ function customApplyDamage (rSource, rTarget, bSecret, sDamage, nTotal)
 	--Technically you could have two different wizards spend their reaction on this character
 	for _,nodeEffect in pairs(aArcaneWard) do
 	-- TODO: Get source. and pass him to arcaneWard
-		local rEffectSource = -- something
-		arcaneWard(rSource, rEffectSource, bSecret, sDamage, nTotal)
+		local nodeSource = DB.getValue(nodeEffect,"source_name", "")
+		local rEffectSource = ActorManager.resolveActor(nodeSource)
+		if rEffectSource ~= nil then
+			arcaneWard(rSource, rEffectSource, bSecret, sDamage, nTotal)
+		end
 	end
 	if (hasArcaneWard(rTarget)) then
 		arcaneWard(rSource, rTarget, bSecret, sDamage, nTotal)
 	end
 	return applyDamage(rSource, rTarget, bSecret, sDamage, nTotal)
 end
+
+
+function customRest(nodeActor, bLong)
+	local rActor = ActorManager.resolveActor(nodeActor)
+	if bLong and hasArcaneWard(rActor) then
+		local nActive = DB.getValue(nodeActor, "arcaneward", 0)
+		if nActive == 1 then
+			DB.setValue(nodeActor, "arcaneward", "number", 0)
+			DB.setValue(nodeActor, "hp.arcaneward", "number", 0)
+		end
+	end
+	rest(nodeActor, bLong)
+end
+
+-- function customEncodeActors(draginfo, rSource, aTargets)
+-- 	if (draginfo and rSource and rSource.sConditions and rSource.sConditions ~= "") then
+--         draginfo.setMetaData("sConditions",rSource.sConditions)
+--     end
+-- 	return	encodeActors(draginfo, rSource, aTargets)
+-- end
+
+-- setup up metadata for saves vs conditon when PC rolled from character sheet
+-- Not needed- going a different route
+-- function customGetPCPowerAction(nodeAction, sSubRoll)
+-- 	local rAction, rActor = getPCPowerAction(nodeAction, sSubRoll)
+-- 	--Debug.chat(rAction)
+-- 	local sSchool = DB.getValue(nodeAction, "...school", "");
+-- 	local sGroup = DB.getValue(nodeAction, "...group", "");
+-- 	Debug.chat(sSchool ..  " " .. sGroup .. " " .. rAction.type)
+-- 	if rActor ~= nil and rAction.save then
+-- 		for _,v in pairs(DB.getChildren(nodeAction.getParent().getParent(), "")) do
+-- 			local sGroup = DB.getValue(v, "group", "")
+-- 			local sSchool = DB.getValue(v, "school", "")
+-- 		end
+-- 	end
+-- 	return rAction, rActor
+-- end
 
 function sendOOB(nodeEffect,type, sEffect)
 	local msgOOB = {}
