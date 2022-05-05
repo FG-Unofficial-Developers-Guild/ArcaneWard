@@ -8,11 +8,12 @@
 		<author>Ryan Hagelstrom</author>
 		<description>Automates Arcane Ward Trait</description>
 		<ruleset>
-            		<name>5E</name>
+            <name>5E</name>
 		</ruleset>
 	</properties>
 	<base>
 		<includefile source="campaign/power_item.xml" />
+		<!-- <includefile source="campaign/record_char_main.xml" /> -->
 		<includefile source="graphics/graphics_icons.xml" />
 		<icon name="ArcaneWardOn" file="graphics/icons/power_arcaneward_on.png"></icon>
 		<icon name="ArcaneWardOff" file="graphics/icons/power_arcaneward_off.png"></icon>

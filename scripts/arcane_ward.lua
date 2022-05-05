@@ -7,6 +7,14 @@ local applyDamage = nil
 local messageDamage = nil
 local rest = nil
 
+--TODO:
+-- Button to cast abjuration spells
+-- Get wizard level
+-- parse NPC for the text "X hit points" and that is it's ward #
+-- CT and Char sheet boxes to display current AW HP
+-- Upcast
+-- AW Effect for reactions
+
 OOB_MSGTYPE_ARCANEWARD = "arcaneward"
 
 function onInit()
@@ -52,7 +60,6 @@ function hasArcaneWard(rActor)
 		for _, nodeFeature in pairs(aFeatures) do
 			local sName = DB.getValue(nodeFeature, "name", "")
 			if sName:upper() == "ARCANE WARD" then
-				--TODO: - parse NPC for the text "X hit points" and that is it's ward #
 				return true
 			end
 		end
@@ -75,10 +82,39 @@ function arcaneWard(rSource, rTarget, bSecret, sDamage, nTotal)
 			nTotal = 0
 		end
 		DB.setValue(nodeTarget, "hp.arcaneward", "number", nArcaneWardHP)
-		Debug.chat("Arcane Ward Hit " .. "Ward Takes:  " .. tostring(nArcaneWardHP) .. " Damage: "  .. nTotal)
+	--	Debug.chat("Arcane Ward Hit " .. "Ward Takes:  " .. tostring(nArcaneWardHP) .. " Damage: "  .. nTotal)
+		sDamage = removeAbsorbed(sDamage, nTotalOrig -  nTotal)
 		sDamage =  "[ARCANE WARD: " .. tostring(nTotalOrig - nTotal) .. "] " .. sDamage
 	end
 	return sDamage, nTotal
+end
+
+--this is kind of a mess but I'm done with string manip for the day
+--fix this up nice some other time (yeah right)
+function removeAbsorbed(sDamage, nAbsorbed)
+	local result = {}
+	local regex = ("([^%s]+)"):format("[TY")
+	for each in sDamage:gmatch(regex) do
+	   table.insert(result, each)
+	end
+	local sNewDamage = ""
+	for _, sClause in pairs(result) do
+		if sClause:match("PE:") then
+			sClause = "[TY" .. sClause
+			local nClauseDamage = tonumber(sClause:match("=%d+%)"):match("%d+"))
+			if nAbsorbed >= nClauseDamage then
+				nAbsorbed = nAbsorbed - nClauseDamage
+			else
+				nClauseDamage = nClauseDamage - nAbsorbed
+				nAbsorbed = 0
+				sClause = sClause:gsub("=%d+%)", "=" .. tostring(nClauseDamage) .. ")")
+				sNewDamage = sNewDamage .. sClause
+			end
+		else
+			sNewDamage = sNewDamage .. sClause -- not damage clause so it passes though
+		end
+	end
+	return sNewDamage
 end
 
 
@@ -95,9 +131,6 @@ end
 --  (4) real hit points.
 
 function customApplyDamage (rSource, rTarget, bSecret, sDamage, nTotal)
-
-	--TODO: If the target has an effect named Arcane Ward, the source of the effect
-	-- will take the damage and the original target takes the rest
 	local aArcaneWard = EffectManager5E.getEffectsByType(rTarget, "ARCANE WARD", {}, rSource)
 
 	--Technically you could have two different wizards spend their reaction on this character
