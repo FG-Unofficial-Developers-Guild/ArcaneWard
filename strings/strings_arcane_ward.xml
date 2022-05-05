@@ -1,0 +1,13 @@
+<!--
+  	Author: Ryan Hagelstrom
+	Copyright � 2021
+	This work is licensed under a Creative Commons Attribution-ShareAlike 4.0 International License.
+	https://creativecommons.org/licenses/by-sa/4.0/
+-->
+
+<root>
+	<string name="option_Better_Combat_Effects_Gold">Arcane Ward (GM)</string>
+	<string name="ct_error_aw_missinglevel">AW_LVLMISSING_ERROR</string>
+	<string name="ct_error_aw_missingactor">AW_ACTORMISSING_ERROR</string>
+
+</root>
