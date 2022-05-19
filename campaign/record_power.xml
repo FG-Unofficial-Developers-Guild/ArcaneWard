@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+	<windowclass name="power_item_header" merge="join">
+		<sheetdata>
+			<button_abjuration name="button_arcaneward" />
+			<!-- <windowlist name="actionsmini" insertbefore="button_arcaneward" /> -->
+			<!-- <string_power name="group" insertbefore="button_abjuration" /> -->
+		</sheetdata>
+	</windowclass>
+</root>

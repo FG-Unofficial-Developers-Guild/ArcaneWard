@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+	<windowclass name="charsheet_main" merge="join">
+		<script>
+			function onInit()
+				if super.onInit then
+					super.onInit();
+				end
+			end
+		</script>
+		<sheetdata merge="join">
+			<label_charframetop name="healthtitle">
+				<anchored height="20">
+					<top anchor="bottom" offset="-120" />
+					<left offset="90" />
+					<right offset="-90" />
+				</anchored>
+				<icons>char_stats</icons>
+			</label_charframetop>
+
+			<number_charwounds name="wounds" source="hp.wounds">
+				<anchored >
+					<left anchor="center" offset="-88" />
+				</anchored>
+			</number_charwounds>
+			<basicnumber name="arcaneward_hp" source="hp.arcaneward">
+				<anchored to="temphp" position="righthigh" offset="15,0" width="40" height="30" />
+				<stateframe>
+					<drophilight name="fieldfocusplus" />
+				</stateframe>
+				<font>reference-b-large</font>
+				<color>4B0082</color>
+				<description textres="label_arcaneward" />
+				<hideonvalue>0</hideonvalue>
+				<script>
+					function onUpdated(bUser, previousValue, newValue)
+						if bUser then
+							HpManager.recalculateTotal(window.getDatabaseNode());
+						end
+						window.onHealthChanged();
+					end
+					function onDrop(x, y, draginfo)
+						if draginfo.isType("number") then
+							setValue(getValue() + draginfo.getNumberData());
+							return true;
+						end
+					end
+				</script>
+			</basicnumber>
+
+			<label_charfieldtop name="awhp_label">
+				<anchored to="arcaneward_hp" offset="5,15" />
+				<static textres="char_label_arcaneward" />
+			</label_charfieldtop>
+		</sheetdata>
+	</windowclass>
+</root>

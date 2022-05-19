@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+
+<root>
+	<icon name="button_arcaneward" file="graphics/buttons/button_aw_small.png" />
+	<icon name="button_arcaneward_pressed" file="graphics/buttons/button_aw_small_down.png" />
+	<icon name="ArcaneWard" file="graphics/icons/ArcaneWard.png"></icon>
+</root>
