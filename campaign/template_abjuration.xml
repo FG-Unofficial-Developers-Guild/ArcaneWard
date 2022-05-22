@@ -8,49 +8,14 @@
 <root>
 
 <template name="button_abjuration"  >
-    <buttoncontrol insertafter="group">
+    <buttoncontrol>
             <anchored width="20" height="20" >
-					<top position="insidetopleft"  offset="2" />
-					<left parent="name" anchor="right" offset="10" />
-					<!-- <right parent="rightanchor" anchor="left" relation="relative" offset="-5" /> -->
+            		<top offset="2" />
+					<left parent="name" anchor="right" relation="relative" offset="10"/>
 			</anchored>
-        	<!-- <anchored position="insidetopleft" offset="2,2" /> -->
 			<icon normal="button_arcaneward" pressed="button_arcaneward_pressed" />
             <tooltip textres="abjuration_label_resource" />
-                <!-- <top offset="2" /> -->
-				<!-- <left parent="rightanchor" anchor="right" offset="10" /> -->
-				<!-- <right parent="rightanchor" anchor="left" relation="relative" offset="-5" /> -->
-                <!-- <anchored to="rightanchor"> -->
-				<!-- <top /> -->
-				<!-- <right anchor="left" relation="relative" offset="-5" /> -->
-			<!-- </anchored> -->
-                <script>
-                    function onInit()
-                        --if visible then
-                        --    return;
-                        --end
-                        local node = window.getDatabaseNode()
-
-                        local sGroup = DB.getValue(node, "group", "")
-	                    local sSchool = DB.getValue(node, "school", "")
-                        local sType = DB.getValue(node, "type", "");
-                        local rActor = ActorManager.resolveActor(node.getParent().getParent())
-                        if sGroup == "Spells" and sSchool == "Abjuration" and ArcaneWard.hasArcaneWard(rActor) then
-                            setVisible(true);
-                        else
-                            setVisible(false);
-                        end
-                    end
-                    function onButtonPress()
-                        if super and super.onButtonPress() then
-                            super.onButtonPress()
-                        end
-                        local node = window.getDatabaseNode()
-                        local nLevel = DB.getValue(node, "level", 0)
-
-                        ArcaneWard.castAbjuration(node.getParent().getParent(), nLevel)
-                    end
-                </script>
+            <script file="campaign/scripts/spell_cast.lua" />
         </buttoncontrol>
 	</template>
 </root>

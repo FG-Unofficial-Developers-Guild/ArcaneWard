@@ -20,9 +20,7 @@ local messageDamage = nil
 local rest = nil
 local addNPCtoCT = nil
 --TODO:
--- Button to cast abjuration spells
 -- parse NPC for the text "X hit points" and that is it's ward #
--- CT and Char sheet boxes to display current AW HP
 -- Upcast
 
 OOB_MSGTYPE_ARCANEWARD = "arcaneward"
@@ -50,26 +48,40 @@ function onClose()
 end
 
 function castAbjuration(nodeActor, nLevel)
+	local rActor = ActorManager.resolveActor(nodeActor)
 	local nActive = DB.getValue(nodeActor, "arcaneward", 0)
 	local sDBAWHP = getDBString(nodeActor)
 	local nTotal
+	local nAdded
+	local sActivated = ""
 
 	if nActive == 1 then
 		local nArcaneWardHP = DB.getValue(nodeActor, sDBAWHP, 0)
-		nTotal = nArcaneWardHP + nLevel * 2
+		nAdded = nLevel * 2
+		nTotal = nArcaneWardHP + nAdded
+
 	else
 		local nBonus = DB.getValue(nodeActor, "abilities.intelligence.bonus", 0)
 		for _,nodeClass in pairs(DB.getChildren(nodeActor, "classes")) do
 			local sClassName = StringManager.trim(DB.getValue(nodeClass, "name", "")):lower()
+			--runewalker for my game Svilland Campaign Setting
 			if sClassName == "wizard" or sClassName == "runewalker" then
 				nWizLevel = DB.getValue(nodeClass, "level", 0)
+				sActivated = "[ACTIVATED] "
 				break
 			end
 		end
-		nTotal = nWizLevel * 2  + nBonus
+		nAdded = nWizLevel * 2  + nBonus
+		nTotal = nAdded
 		DB.setValue(nodeActor, "arcaneward", "number", 1)
 	end
 	DB.setValue(nodeActor, sDBAWHP, "number", nTotal)
+
+	local rMessage = ChatManager.createBaseMessage(rActor, DB.getValue(nodeActor,"name"));
+	-- rMessage.secret
+	rMessage.icon = "ArcaneWard"
+	rMessage.text = rMessage.text .. "[Arcane Ward: " .. tostring(nAdded) .. " ] -> " .. sActivated .. "[to " ..  DB.getValue(nodeActor,"name") .."]"
+	Comm.deliverChatMessage(rMessage);
 end
 
 function hasArcaneWard(rActor)
@@ -103,7 +115,6 @@ function arcaneWard(rSource, rTarget, bSecret, sDamage, nTotal)
 	local nodeTarget = ActorManager.getCreatureNode(rTarget)
 	local nActive = DB.getValue(nodeTarget, "arcaneward", 0)
 	local sDBAWHP = getDBString(nodeTarget)
---	Debug.chat("ArcaneWard: " .. sDBAWHP)
 	local nArcaneWardHP = DB.getValue(nodeTarget, sDBAWHP, 0)
 
 	if nActive == 1 and nArcaneWardHP > 0 then
@@ -117,7 +128,7 @@ function arcaneWard(rSource, rTarget, bSecret, sDamage, nTotal)
 		end
 		DB.setValue(nodeTarget, sDBAWHP, "number", nArcaneWardHP)
 		sDamage = removeAbsorbed(sDamage, nTotalOrig -  nTotal)
-		sDamage =  "[ARCANE WARD: " .. tostring(nTotalOrig - nTotal) .. "] " .. sDamage
+		sDamage =  "[ARCANE WARD ABSORBED: " .. tostring(nTotalOrig - nTotal) .. "] " .. sDamage
 	end
 	return sDamage, nTotal
 end
@@ -184,9 +195,9 @@ end
 
 function customMessageDamage(rSource, rTarget, bSecret, sDamageType, sDamageDesc, sTotal, sExtraResult)
 	--TODO: Think we need to loop here incase of multiple arcane wards
-	local sArcaneWard = sDamageDesc:match("%[ARCANE WARD:%s*%d*]")
+	local sArcaneWard = sDamageDesc:match("%[ARCANE WARD ABSORBED:%s*%d*]")
 	if sArcaneWard ~= nil then
-		sExtraResult = "ABSORB " .. sArcaneWard .. sExtraResult
+		sExtraResult = sArcaneWard .. sExtraResult
 	end
 	return messageDamage(rSource, rTarget, bSecret, sDamageType, sDamageDesc, sTotal, sExtraResult)
 end
@@ -198,6 +209,11 @@ function customRest(nodeActor, bLong)
 		if nActive == 1 then
 			DB.setValue(nodeActor, "arcaneward", "number", 0)
 			DB.setValue(nodeActor, "hp.arcaneward", "number", 0)
+			local rMessage = ChatManager.createBaseMessage(rActor, DB.getValue(nodeActor,"name"));
+			-- rMessage.secret
+			rMessage.icon = "ArcaneWard"
+			rMessage.text = rMessage.text .. sActivated .. "[Arcane Ward] ->" .. " [DEACTIVATED]" .. " [to " ..  DB.getValue(nodeActor,"name") .."]"
+			Comm.deliverChatMessage(rMessage);
 		end
 	end
 	rest(nodeActor, bLong)
@@ -298,6 +314,7 @@ function getEffectsByType(rActor, sEffectCompType, rFilterActor, bTargetedOnly)
 	-- RESULTS
 	return tResults;
 end
+
 function sendOOB(nodeActor,nLevel)
 	local msgOOB = {}
 	msgOOB.sNodeActor = nodeActor
@@ -306,6 +323,11 @@ function sendOOB(nodeActor,nLevel)
 	Comm.deliverOOBMessage(msgOOB, "")
 end
 
+function handleArcaneWardMessage(msgOOB)
+
+	ChatManager.SystemMessage(Interface.getString("ct_error_aw_missinglevel") .. " (" .. msgOOB.sLevel .. ")")
+
+end
 function handleArcaneWard(msgOOB)
 	local nodeActor = DB.findNode(msgOOB.sNodeActor)
 	if not nodeActor then

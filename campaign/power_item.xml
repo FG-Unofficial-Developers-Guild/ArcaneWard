@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="iso-8859-1"?>
-<root>
-  <windowclass name="power_item" merge="join">
-       	<script file="campaign/scripts/power_item.lua" />
-  </windowclass>
-</root>

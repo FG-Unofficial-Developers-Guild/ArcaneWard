@@ -4,7 +4,10 @@ function onInit()
 end
 
 function onLinkChanged()
-    super.onLinkChanged()
+	if super and super.onLinkChanged() then
+    	super.onLinkChanged()
+	end
+
 --	 If a PC, then set up the links to the char sheet
 	local sClass, sRecord = link.getValue();
 	if sClass == "charsheet" then
@@ -15,13 +18,19 @@ function onLinkChanged()
 end
 
 function onIDChanged()
-    super.onIDChanged()
+	if super and super.onIDChanged() then
+		super.onIDChanged()
+	end
 end
 
 function linkPCFields()
 	local nodeChar = link.getTargetDatabaseNode();
 	if nodeChar then
 		arcaneward.setLink(nodeChar.createChild("hp.arcaneward", "number"));
-    end
-    super.linkPCFields()
+    else
+		arcaneward.setLink(nodeChar.createChild("arcanewardhp", "number"));
+	end
+	if super and super.linkPCFields() then
+    	super.linkPCFields()
+	end
 end

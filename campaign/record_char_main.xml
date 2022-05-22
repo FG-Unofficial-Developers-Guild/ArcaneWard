@@ -33,6 +33,16 @@
 				<description textres="label_arcaneward" />
 				<hideonvalue>0</hideonvalue>
 				<script>
+--					function onInit()
+--					local aExtensions = Extension.getExtensions()
+--					for _,sExtension in ipairs(aExtensions) do
+--						tExtension = Extension.getExtensionInfo(sExtension)
+--						if (tExtension.name == "Feature: Constitutional Amendments") then
+--							Debug.chat("Ext Con Amend")
+--							setAnchor("arcaneward_hp", "adjhp", "right", "relative", 15 )
+--							bAdvanceEffects = true
+--						end
+--					end
 					function onUpdated(bUser, previousValue, newValue)
 						if bUser then
 							HpManager.recalculateTotal(window.getDatabaseNode());
