@@ -1,5 +1,7 @@
 function onInit()
-	super.onInit()
+	if super and super.onInit() then
+		super.onInit()
+	end
     onLinkChanged()
 end
 
@@ -28,7 +30,7 @@ function linkPCFields()
 	if nodeChar then
 		arcaneward.setLink(nodeChar.createChild("hp.arcaneward", "number"));
     else
-		arcaneward.setLink(nodeChar.createChild("arcanewardhp", "number"));
+--		arcaneward.setLink(nodeChar.createChild("arcanewardhp", "number"));
 	end
 	if super and super.linkPCFields() then
     	super.linkPCFields()

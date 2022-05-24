@@ -19,11 +19,14 @@ local applyDamage = nil
 local messageDamage = nil
 local rest = nil
 local addNPCtoCT = nil
+local extensions = {}
+
 --TODO:
 -- parse NPC for the text "X hit points" and that is it's ward #
 -- Upcast
 
 OOB_MSGTYPE_ARCANEWARD = "arcaneward"
+
 
 function onInit()
 	OOBManager.registerOOBMsgHandler(OOB_MSGTYPE_ARCANEWARD, handleArcaneWard)
@@ -38,6 +41,11 @@ function onInit()
 	CharManager.rest = customRest
 	CombatManager.addNPC = customAddNPCtoCT
 
+	for index, name in pairs(Extension.getExtensions()) do
+		extensions[name] = index
+		Debug.console(name .. " " .. index)
+   end
+
 end
 
 function onClose()
@@ -45,6 +53,10 @@ function onClose()
 	ActionDamage.messageDamage = messageDamage
 	CharManager.rest = rest
 	CombatManager.addNPC = addNPCtoCT
+end
+
+function hasCA()
+    return extensions["ConstitutionalAmendments"]
 end
 
 function castAbjuration(nodeActor, nLevel)

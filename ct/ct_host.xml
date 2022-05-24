@@ -4,35 +4,38 @@
 			<label_ct name="label_init">
 				<anchored offset="180,3"/>
 			</label_ct>
-			<label_ct name="label_hp">
-				<anchored  offset="135,3" />
-			</label_ct>
 			<label_ct name="label_temp">
-				<anchored offset="95,3"/>
+				<anchored offset="15,3" />
 			</label_ct>
-			<label_ct name="label_arcaneward">
-					<anchored to="header_labels" position="insidetopright" offset="55,3" width="30" />
-					<static textres="ct_label_arcaneward" />
-					<center />
+			<label_ct name="label_hp">
+				<anchored offset="135,3" />
+			</label_ct>
+			<label_ct name="label_wounds">
+				<anchored offset="55,3" />
+			</label_ct>
+
+			<label_ct name="label_arcaneward" insertbefore="label_wounds">
+				<anchored to="header_labels" position="insidetopright" offset="-15,3" width="30" />
+				<static textres="ct_label_arcaneward" />
+				<tooltip textres="ct_tooltip_arcaneward" />
+				<center />
 			</label_ct>
 		</sheetdata>
+		<script file="ct/scripts/combattracker_host.lua" />
 	</windowclass>
 
 
 	<windowclass name="ct_entry" merge="join">
 		<script file="ct/scripts/ct_entry.lua" />
 		<sheetdata>
-			<number_ct_crosslink name="wounds" merge="join">
-				<tabtarget prev="arcaneward" next="strength" />
-			</number_ct_crosslink>
-			<number_ct_crosslink name="arcaneward" merge="add" insertbefore="hptemp">
+			<number_ct_crosslink name="arcaneward" insertbefore="wounds">
+			<!-- <number_ct_crosslink name="arcaneward"> -->
 				<anchored to="rightanchor" width="30" height="20">
 					<top />
 					<right anchor="left" relation="relative" offset="-10" />
 				</anchored>
 				<color>4B0082</color>
 				<hideonvalue value="0" />
-				<tabtarget prev="hptemp" next="wounds" />
 				<script>
 					function handleDrop(draginfo)
 						if draginfo.getNumberData() &gt; 0 then
@@ -45,10 +48,17 @@
 					function update()
 						window.onHealthChanged();
 					end
+
+					<!-- function onFirstLayout()
+						local aExtensions = Extension.getExtensions()
+						for _,sExtension in ipairs(aExtensions) do
+							tExtension = Extension.getExtensionInfo(sExtension)
+							if (tExtension.name == "Feature: Constitutional Amendments") then
+								setAnchor("left", "rightanchor", "left", "relative", 95)
+							end
+						end
+					end -->
 				</script>
-			</number_ct_crosslink>
-			<number_ct_crosslink name="hptemp" merge="join">
-				<tabtarget prev="hptotal" next="arcaneward" />
 			</number_ct_crosslink>
 		</sheetdata>
 	</windowclass>

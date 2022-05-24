@@ -1,48 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <root>
 	<windowclass name="charsheet_main" merge="join">
-		<script>
-			function onInit()
-				if super.onInit then
-					super.onInit();
-				end
-			end
-		</script>
-		<sheetdata merge="join">
+		<sheetdata>
 			<label_charframetop name="healthtitle">
 				<anchored height="20">
 					<top anchor="bottom" offset="-120" />
-					<left offset="90" />
-					<right offset="-90" />
+					<left offset="75" />
+					<right offset="-75" />
 				</anchored>
 				<icons>char_stats</icons>
 			</label_charframetop>
 
 			<number_charwounds name="wounds" source="hp.wounds">
 				<anchored >
-					<left anchor="center" offset="-88" />
+					<left anchor="center" offset="-128" />
 				</anchored>
 			</number_charwounds>
-			<basicnumber name="arcaneward_hp" source="hp.arcaneward">
-				<anchored to="temphp" position="righthigh" offset="15,0" width="40" height="30" />
-				<stateframe>
-					<drophilight name="fieldfocusplus" />
-				</stateframe>
+
+			<basicnumber name="arcaneward_hp" source="hp.arcaneward" >
+				<anchored to="temphp" position="righthigh" offset="15,0"  width="40" height="30"/>
 				<font>reference-b-large</font>
 				<color>4B0082</color>
 				<description textres="label_arcaneward" />
 				<hideonvalue>0</hideonvalue>
 				<script>
---					function onInit()
---					local aExtensions = Extension.getExtensions()
---					for _,sExtension in ipairs(aExtensions) do
---						tExtension = Extension.getExtensionInfo(sExtension)
---						if (tExtension.name == "Feature: Constitutional Amendments") then
---							Debug.chat("Ext Con Amend")
---							setAnchor("arcaneward_hp", "adjhp", "right", "relative", 15 )
---							bAdvanceEffects = true
---						end
---					end
 					function onUpdated(bUser, previousValue, newValue)
 						if bUser then
 							HpManager.recalculateTotal(window.getDatabaseNode());
@@ -61,7 +42,12 @@
 			<label_charfieldtop name="awhp_label">
 				<anchored to="arcaneward_hp" offset="5,15" />
 				<static textres="char_label_arcaneward" />
+				<tooltip textres="ct_tooltip_arcaneward" />
 			</label_charfieldtop>
+
+			<basicsmartnumber name="adjhp">
+				<anchored relation="relative"  offset="70,0"  />
+			</basicsmartnumber>
 		</sheetdata>
 	</windowclass>
 </root>

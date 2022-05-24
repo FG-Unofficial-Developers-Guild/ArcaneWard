@@ -35,7 +35,7 @@ function onDisplayChanged()
             header.subwindow.button_abjuration.setIcons("button_arcaneward","button_arcaneward_pressed")
             header.subwindow.button_abjuration.setTooltipText("Arcane Ward")
         elseif nLevel > 0 then
-            header.subwindow.button_abjuration.setIcons("button_cast_spell", "button_cast_spell_done")
+            header.subwindow.button_abjuration.setIcons("button_cast_spell", "button_cast_spell_pressed")
             header.subwindow.button_abjuration.setTooltipText("Cast")
         else
             header.subwindow.button_abjuration.setVisible(false);

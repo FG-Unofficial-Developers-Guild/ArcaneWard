@@ -8,7 +8,7 @@
 <root>
 	<windowclass name="combattracker_client" merge="join">
 		<sheetdata>
-			<label_ct_right name="label_arcaneward" insertbefore="label_init">
+			<label_ct_right name="label_arcaneward" insertbefore="label_wounds">
 				<static textres="ct_label_wounds" />
 				<tooltip textres="ct_tooltip_arcaneward" />
 			</label_ct_right>
