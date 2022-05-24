@@ -5,8 +5,8 @@
 			<label_charframetop name="healthtitle">
 				<anchored height="20">
 					<top anchor="bottom" offset="-120" />
-					<left offset="75" />
-					<right offset="-75" />
+					<left offset="85" />
+					<right offset="-85" />
 				</anchored>
 				<icons>char_stats</icons>
 			</label_charframetop>
@@ -20,7 +20,7 @@
 			<basicnumber name="arcaneward_hp" source="hp.arcaneward" >
 				<anchored to="temphp" position="righthigh" offset="15,0"  width="40" height="30"/>
 				<font>reference-b-large</font>
-				<color>4B0082</color>
+				<color>a063eb</color>
 				<description textres="label_arcaneward" />
 				<hideonvalue>0</hideonvalue>
 				<script>

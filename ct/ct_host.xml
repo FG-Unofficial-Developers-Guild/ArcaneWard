@@ -24,7 +24,7 @@
 					<top />
 					<right anchor="left" relation="relative" offset="-10" />
 				</anchored>
-				<color>4B0082</color>
+				<color>a063eb</color>
 				<hideonvalue value="0" />
 				<script>
 					function handleDrop(draginfo)
