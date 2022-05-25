@@ -59,7 +59,7 @@ function hasCA()
     return extensions["ConstitutionalAmendments"]
 end
 
-function castAbjuration(nodeActor, nLevel)
+function castAbjuration(nodeActor, nLevel ,nName)
 	local rActor = ActorManager.resolveActor(nodeActor)
 	local nActive = DB.getValue(nodeActor, "arcaneward", 0)
 	local sDBAWHP = getDBString(nodeActor)
@@ -92,7 +92,7 @@ function castAbjuration(nodeActor, nLevel)
 	local rMessage = ChatManager.createBaseMessage(rActor, DB.getValue(nodeActor,"name"));
 	-- rMessage.secret
 	rMessage.icon = "ArcaneWard"
-	rMessage.text = rMessage.text .. "[Arcane Ward: " .. tostring(nAdded) .. " ] -> " .. sActivated .. "[to " ..  DB.getValue(nodeActor,"name") .."]"
+	rMessage.text = rMessage.text .. "Begins [CAST] " .. nName .. " [LVL " .. nLevel .."] [Arcane Ward: " .. tostring(nAdded) .. " ] -> " .. sActivated .. "[to " ..  DB.getValue(nodeActor,"name") .."]"
 	Comm.deliverChatMessage(rMessage);
 end
 
