@@ -4,9 +4,9 @@
 --		https://creativecommons.org/licenses/by-sa/4.0/
 
 function linkPCFields()
-	local nodeChar = link.getTargetDatabaseNode();
+	local nodeChar = link.getTargetDatabaseNode()
 	if nodeChar then
-		arcanewardhp.setLink(nodeChar.createChild("hp.arcaneward", "number"));
+		arcanewardhp.setLink(nodeChar.createChild("hp.arcaneward", "number"))
 	end
 	if super and super.linkPCFields then
 		super.linkPCFields()
