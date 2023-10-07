@@ -2,6 +2,11 @@
 --	  	Copyright © 2022
 --	  	This work is licensed under a Creative Commons Attribution-ShareAlike 4.0 International License.
 --	  	https://creativecommons.org/licenses/by-sa/4.0/
+--
+-- luacheck: globals ArcaneWard onInit onClose hasCA hasLA hasCG hasSAI castAbjuration parseArcaneWard hasArcaneWard arcaneWard
+-- luacheck: globals removeAbsorbed getDBString customApplyDamage customMessageDamage customRest getCurrentCastInfo
+-- luacheck: globals resetCastInfo getNextSpellSlot boolToNumber numberToBool
+-- luacheck: globals getMagicTraits getPactMagicSlots expendSpellSlot getSpellSlots addNPCtoCT getEffectsByType
 -- Sage Advice
 -- https://dnd.wizards.com/articles/features/sageadvice_july2015
 -- How does Arcane Ward interact with temporary hit points and damage resistance that an abjurer might have?

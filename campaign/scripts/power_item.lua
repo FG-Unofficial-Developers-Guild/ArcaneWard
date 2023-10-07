@@ -2,6 +2,9 @@
 --	  	Copyright © 2022
 --	  	This work is licensed under a Creative Commons Attribution-ShareAlike 4.0 International License.
 --	  	https://creativecommons.org/licenses/by-sa/4.0/
+--
+-- luacheck: globals onInit onClose optionChange registerCallbacks unRegisterCallbacks onUpdate onDisplayChanged
+-- luacheck: globals setCastButton
 local bCallbacksRegistered = false;
 function onInit()
     if super and super.onInit then
